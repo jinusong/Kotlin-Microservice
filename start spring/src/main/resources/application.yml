@@ -1,0 +1,15 @@
+service:
+  message:
+    type: "simple"
+    text: "hello"
+
+---
+service:
+  message:
+    text: "hi"
+
+---
+service:
+  message:
+    type: "advance"
+    text: "welcome"
