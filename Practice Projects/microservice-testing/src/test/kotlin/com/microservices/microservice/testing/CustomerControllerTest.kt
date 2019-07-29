@@ -1,6 +1,6 @@
 package com.microservices.microservice.testing
 
-import org.junit.Assert.*
+import org.amshove.kluent.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.BDDMockito.*
@@ -11,10 +11,31 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.ResultHandler
+import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.JsonPathResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+
+class WithKeyword {
+    infix fun `jsosn path`(expression: String) = jsonPath("\$" + expression)
+}
+
+val With = WithKeyword()
+
+class ThatKeyword {
+    infix fun `status is http`(value: Int) = status().`is`(value)
+}
+
+val That = ThatKeyword()
+
+infix fun JsonPathResultMatchers.`that the value is`(value: Any) = this.value(value)
+infix fun ResultActions.`and expect`(matcher: ResultMatcher) = this.andExpect(matcher)
+infix fun ResultActions.`and then do`(handler: ResultHandler) = this.andDo(handler)
+infix fun MockMvc.`do a get request to`(uri: String) = this.perform(get(uri))
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
@@ -32,34 +53,37 @@ class CustomerControllerTest {
 
     @Test
     fun `we should Get a customer by id`() {
-        given(customerService.getCustomer(1))
-                .willReturn(Customer(1, "mock customer"))
+        When calling customerService.getCustomer(1) `it returns`
+                Customer(1, "mock customer")
 
-        mockMvc.perform(get("/customer/1"))
-                .andExpect(status().isOk)
-                .andExpect(jsonPath("\$.id").value(1))
-                .andExpect(jsonPath("\$.name").value("mock customer"))
-                .andDo(print())
+        (mockMvc `do a get request to` "/customer/1"
+                `and expect` (That `status is http` 200)
+                `and expect` (With `jsosn path` ".id" `that the value is` 1)
+                `and expect` (With `jsosn path` ".name" `that the value is` "mock customer")
+                `and then do` print())
+
+        Verify on customerService that customerService.getCustomer(1) was called
+        `Verify no further interactions` on customerService
+
 
         Mockito.reset(customerService)
     }
 
     @Test
     fun `we should GET a list of customers`() {
-        given(customerService.getAllCustomers())
-                .willReturn(listOf(Customer(1, "test"), Customer(2, "mocks")))
+        When calling customerService.getAllCustomers() `it returns` listOf(
+                Customer(1, "test"), Customer(2, "mocks"))
 
-        mockMvc.perform(get("/customers"))
-                .andExpect(status().isOk)
-                .andExpect(jsonPath("\$").isArray)
-                .andExpect(jsonPath("\$[0].id").value(1))
-                .andExpect(jsonPath("\$[0].name").value("test"))
-                .andExpect(jsonPath("\$[1].id").value(2))
-                .andExpect(jsonPath("\$[1].name").value("mocks"))
-                .andDo(print())
+        (mockMvc `do a get request to` "/customers"
+                `and expect` (That `status is http` 200)
+                `and expect` (With `jsosn path` "[0].id" `that the value is` 1)
+                `and expect` (With `jsosn path` "[0].name" `that the value is` "test")
+                `and expect` (With `jsosn path` "[1].id" `that the value is` 2)
+                `and expect` (With `jsosn path` "[1].name" `that the value is` "mocks")
+                ) `and then do` print()
 
-        then(customerService).should(Mockito.times(1)).getAllCustomers()
-        then(customerService).shouldHaveNoMoreInteractions()
+        Verify on customerService that customerService.getAllCustomers() was called
+        `Verify no further interactions` on customerService
 
         Mockito.reset(customerService)
     }

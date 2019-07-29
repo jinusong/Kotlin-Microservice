@@ -1,7 +1,7 @@
 package com.microservices.microservice.testing
 
 import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
+import org.amshove.kluent.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,15 +15,18 @@ class CustomerServiceTest {
     lateinit var customerService: CustomerService
 
     @Test
-    fun getCustomer() {
+    fun `we should get a customer with a valid id`() {
         val customer = customerService.getCustomer(1)
-        assertNotNull(customer)
+        customer.`should not be null`()
         assertEquals(customer?.name, "Kotlin")
     }
 
     @Test
     fun getAllCustomers() {
         val customers = customerService.getAllCustomers()
-        assertEquals(customers.size, 3)
+        customers.size `should be equal to` 3
+        customers.size `should be greater than` 0
+        customers.size `should be less or equal to` 3
+        customers.size `should be in range` 1..3
     }
 }

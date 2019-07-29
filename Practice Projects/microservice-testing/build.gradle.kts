@@ -13,6 +13,7 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
 	mavenCentral()
+	jcenter()
 }
 
 dependencies {
@@ -20,6 +21,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	testImplementation("org.amshove.kluent:kluent:1.53")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 
 }
